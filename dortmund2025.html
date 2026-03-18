@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vogelbeobachtungen Dortmund - Monatsverteilung 2025</title>
+  <style>
+    :root {
+      --bg: #f5f7f0;
+      --panel: #ffffff;
+      --ink: #132018;
+      --muted: #5f7365;
+      --line: #d7e0d4;
+      --bar: #6f8976;
+      --bar-hi: #d95f02;
+      --head: #254336;
+      --chip: #edf3e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 10%, #ffffff 0%, transparent 42%),
+        radial-gradient(circle at 80% 90%, #e7efe3 0%, transparent 35%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 20px 16px 28px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.7rem;
+      letter-spacing: 0.2px;
+      color: var(--head);
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      position: sticky;
+      top: 8px;
+      z-index: 2;
+      box-shadow: 0 7px 18px rgba(0, 0, 0, 0.05);
+    }
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      height: 40px;
+      border: 1px solid #c8d4c6;
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 0.95rem;
+      background: #fbfdf9;
+      color: var(--ink);
+    }
+    .count {
+      padding: 0 10px;
+      white-space: nowrap;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    #cards {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 10px 8px;
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 6px;
+      min-height: 196px;
+    }
+    .names { display: grid; gap: 2px; }
+    .de {
+      font-weight: 700;
+      font-size: 0.96rem;
+      line-height: 1.2;
+      color: #173126;
+    }
+    .sci {
+      font-size: 0.84rem;
+      color: #3f5a4b;
+      line-height: 1.2;
+      font-style: italic;
+    }
+    .meta {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .chip {
+      background: var(--chip);
+      border: 1px solid #d7e2d2;
+      border-radius: 99px;
+      padding: 2px 8px;
+      font-size: 0.77rem;
+      color: #274739;
+    }
+    .chart {
+      width: 100%;
+      height: 114px;
+      display: block;
+      border-top: 1px dashed #d9e2d7;
+      padding-top: 5px;
+    }
+    .axis-label {
+      font-size: 9px;
+      fill: #58705f;
+      font-weight: 600;
+    }
+    .tick-label {
+      font-size: 9px;
+      fill: #6f8476;
+    }
+    .grid {
+      stroke: #dee6dc;
+      stroke-width: 1;
+      shape-rendering: crispEdges;
+    }
+    .bar {
+      fill: var(--bar);
+      opacity: 0.86;
+    }
+    .bar.highlight {
+      fill: var(--bar-hi);
+      opacity: 1;
+    }
+    .bar-value {
+      font-size: 8px;
+      fill: #1b1818;
+      font-weight: 700;
+      dominant-baseline: auto;
+    }
+    @media (max-width: 840px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .count { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Vogelbeobachtungen Dortmund - Monatsverteilung 2025</h1>
+    <p class="subtitle">Filter nach deutschem oder wissenschaftlichem Namen. Der ausgewählte Monat wird je Art hervorgehoben.</p>
+
+    <div class="toolbar">
+      <input id="filterInput" type="text" placeholder="Filter (z.B. Ringeltaube oder Columba palumbus)" />
+      <select id="monthSelect" aria-label="Hervorgehobener Monat"></select>
+      <div class="count" id="countInfo"></div>
+    </div>
+
+    <div id="cards"></div>
+  </div>
+
+  <script id="jsonData" type="application/json">{"meta":{"region":"Dortmund","year":2025,"months":["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],"valueDescription":"Anzahl Beobachtungen pro Monat"},"species":[{"de":"Eistaucher","sci":"Gavia immer","months":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Zwergtaucher","sci":"Tachybaptus ruficollis","months":[81,64,75,46,50,34,44,47,47,39,60,50]},{"de":"Schwarzhalstaucher","sci":"Podiceps nigricollis","months":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Haubentaucher","sci":"Podiceps cristatus","months":[61,43,55,65,78,36,44,42,29,29,36,29]},{"de":"Kormoran","sci":"Phalacrocorax carbo","months":[114,106,109,68,70,36,47,61,78,98,134,81]},{"de":"Graureiher","sci":"Ardea cinerea","months":[140,153,146,143,162,77,89,100,96,107,125,127]},{"de":"Silberreiher","sci":"Ardea alba","months":[61,87,58,34,22,0,4,27,33,45,63,46]},{"de":"Seidenreiher","sci":"Egretta garzetta","months":[8,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Rohrdommel","sci":"Botaurus stellaris","months":[5,1,1,0,0,0,0,0,1,1,2,31]},{"de":"Weißstorch","sci":"Ciconia ciconia","months":[2,7,18,22,30,11,5,13,12,1,0,0]},{"de":"Löffler","sci":"Platalea leucorodia","months":[1,1,0,0,0,0,0,0,3,0,0,0]},{"de":"Singschwan","sci":"Cygnus cygnus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Höckerschwan","sci":"Cygnus olor","months":[79,69,95,68,97,39,45,40,58,43,63,45]},{"de":"Schwarzschwan (Trauerschwan)","sci":"Cygnus atratus","months":[5,6,0,2,3,0,0,0,6,0,0,0]},{"de":"Graugans","sci":"Anser anser","months":[27,49,99,94,90,44,52,51,41,36,32,28]},{"de":"Blässgans","sci":"Anser albifrons","months":[12,2,1,0,0,0,0,0,1,10,4,5]},{"de":"Saatgans, unbestimmt","sci":"Anser fabalis / serrirostris","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kurzschnabelgans","sci":"Anser brachyrhynchus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Hausgans","sci":"Anser cf. domestica","months":[1,2,3,3,0,0,1,0,1,1,1,0]},{"de":"Anser-Gans, unbestimmt","sci":"Anser sp.","months":[1,0,0,0,0,0,0,0,0,3,1,0]},{"de":"Streifengans","sci":"Anser indicus","months":[3,3,2,0,0,2,0,2,0,0,1,2]},{"de":"Weißwangengans (Nonnengans)","sci":"Branta leucopsis","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kanadagans","sci":"Branta canadensis","months":[120,169,231,201,214,59,104,131,99,119,89,49]},{"de":"Rostgans","sci":"Tadorna ferruginea","months":[13,13,27,29,51,33,23,30,34,19,11,2]},{"de":"Nilgans","sci":"Alopochen aegyptiaca","months":[134,158,203,160,154,81,89,86,81,129,173,130]},{"de":"Brandgans","sci":"Tadorna tadorna","months":[2,10,1,0,0,4,7,0,0,0,0,0]},{"de":"Warzenente (Moschusente)","sci":"Cairina moschata f. domestica","months":[1,1,1,0,2,1,0,0,0,5,0,0]},{"de":"Stockente","sci":"Anas platyrhynchos","months":[139,141,204,164,168,81,102,120,83,100,137,112]},{"de":"Knäkente","sci":"Spatula querquedula","months":[5,2,4,0,0,1,2,0,0,0,0,0]},{"de":"Krickente","sci":"Anas crecca","months":[27,43,62,37,10,1,15,32,35,28,45,34]},{"de":"Spießente","sci":"Anas acuta","months":[6,8,2,0,0,0,0,0,0,0,1,1]},{"de":"Pfeifente","sci":"Mareca penelope","months":[7,6,1,0,0,0,0,0,5,6,5,3]},{"de":"Mandarinente","sci":"Aix galericulata","months":[4,5,8,1,0,1,0,1,0,4,1,0]},{"de":"Schnatterente","sci":"Mareca strepera","months":[45,51,64,53,58,25,20,49,43,32,58,53]},{"de":"Löffelente","sci":"Spatula clypeata","months":[11,4,6,24,2,0,3,3,25,13,10,6]},{"de":"Hausente","sci":"Anas platyrhynchos f. domestica","months":[10,3,3,3,6,3,3,4,6,2,4,5]},{"de":"Kolbenente","sci":"Netta rufina","months":[7,16,15,14,3,9,13,5,0,5,0,0]},{"de":"Tafelente","sci":"Aythya ferina","months":[62,32,16,1,1,0,0,1,3,21,34,27]},{"de":"Reiherente","sci":"Aythya fuligula","months":[73,57,66,62,74,29,42,39,34,32,50,40]},{"de":"Moorente","sci":"Aythya nyroca","months":[13,19,4,10,6,1,0,0,0,0,21,7]},{"de":"Bergente","sci":"Aythya marila","months":[18,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Enten-Hybrid, unbestimmt","sci":"Anatidae sp. x Anatidae sp.","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Schellente","sci":"Bucephala clangula","months":[30,15,3,0,0,0,0,0,0,0,0,11]},{"de":"Kappensäger","sci":"Lophodytes cucullatus","months":[2,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Zwergsäger","sci":"Mergellus albellus","months":[31,5,0,0,0,0,0,0,0,0,0,4]},{"de":"Gänsesäger","sci":"Mergus merganser","months":[16,16,4,0,2,1,0,0,1,0,0,4]},{"de":"Wespenbussard","sci":"Pernis apivorus","months":[4,2,0,5,9,0,0,0,0,0,0,0]},{"de":"Rotmilan","sci":"Milvus milvus","months":[11,43,25,32,19,12,12,23,8,10,2,0]},{"de":"Schwarzmilan","sci":"Milvus migrans","months":[2,3,1,3,0,0,1,0,0,0,0,0]},{"de":"Habicht","sci":"Astur gentilis","months":[5,14,6,6,1,0,3,3,10,7,9,14]},{"de":"Sperber","sci":"Accipiter nisus","months":[21,15,20,19,9,6,6,18,20,34,38,12]},{"de":"Mäusebussard","sci":"Buteo buteo","months":[128,172,251,137,129,71,82,103,178,120,124,126]},{"de":"Steinadler","sci":"Aquila chrysaetos","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Seeadler","sci":"Haliaeetus albicilla","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kornweihe","sci":"Circus cyaneus","months":[1,0,0,0,0,1,0,0,0,0,0,0]},{"de":"Rohrweihe","sci":"Circus aeruginosus","months":[2,1,10,0,3,5,6,1,0,0,0,0]},{"de":"Weihe, unbestimmt","sci":"Circus sp.","months":[1,0,0,0,1,1,0,0,0,0,0,0]},{"de":"Fischadler","sci":"Pandion haliaetus","months":[4,1,0,0,2,0,1,0,0,0,0,0]},{"de":"Wanderfalke","sci":"Falco peregrinus","months":[1,4,0,8,5,6,4,4,9,9,4,6]},{"de":"Baumfalke","sci":"Falco subbuteo","months":[1,1,3,4,5,6,10,8,0,0,0,0]},{"de":"Merlin","sci":"Falco columbarius","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Turmfalke","sci":"Falco tinnunculus","months":[40,39,84,79,112,63,90,84,125,70,81,49]},{"de":"Wachtel","sci":"Coturnix coturnix","months":[1,0,1,0,0,0,0,0,0,0,0,0]},{"de":"Fasan (Jagdfasan)","sci":"Phasianus colchicus","months":[18,19,56,76,109,47,24,18,34,40,44,22]},{"de":"Kranich","sci":"Grus grus","months":[10,131,17,0,0,0,0,0,1,88,77,27]},{"de":"Wasserralle","sci":"Rallus aquaticus","months":[39,27,38,12,22,16,16,21,34,27,46,37]},{"de":"Teichhuhn","sci":"Gallinula chloropus","months":[104,104,124,101,100,56,72,60,62,79,101,83]},{"de":"Blässhuhn","sci":"Fulica atra","months":[124,111,145,135,149,80,65,64,61,56,82,60]},{"de":"Austernfischer","sci":"Haematopus ostralegus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kiebitz","sci":"Vanellus vanellus","months":[3,11,33,22,42,30,34,27,32,22,11,0]},{"de":"Kiebitzregenpfeifer","sci":"Pluvialis squatarola","months":[6,0,0,0,1,0,0,0,0,0,0,0]},{"de":"Goldregenpfeifer","sci":"Pluvialis apricaria","months":[1,0,0,0,0,0,0,0,0,1,1,0]},{"de":"Sandregenpfeifer","sci":"Charadrius hiaticula","months":[6,0,0,6,3,0,0,0,0,0,0,0]},{"de":"Flussregenpfeifer","sci":"Charadrius dubius","months":[36,40,57,44,28,6,0,0,0,0,0,0]},{"de":"Mornellregenpfeifer","sci":"Eudromias morinellus","months":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Regenbrachvogel","sci":"Numenius phaeopus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Uferschnepfe","sci":"Limosa limosa","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Dunkelwasserläufer","sci":"Tringa erythropus","months":[3,2,2,0,1,1,1,0,0,0,0,0]},{"de":"Rotschenkel","sci":"Tringa totanus","months":[6,1,4,0,0,0,1,0,0,0,0,0]},{"de":"Grünschenkel","sci":"Tringa nebularia","months":[1,7,16,1,0,14,0,0,0,0,0,0]},{"de":"Waldwasserläufer","sci":"Tringa ochropus","months":[2,1,26,33,6,27,34,37,12,4,9,2]},{"de":"Bruchwasserläufer","sci":"Tringa glareola","months":[4,10,0,11,15,10,0,0,0,0,0,0]},{"de":"Flussuferläufer","sci":"Actitis hypoleucos","months":[1,2,2,13,36,0,34,51,40,10,1,0]},{"de":"Bekassine","sci":"Gallinago gallinago","months":[6,22,34,10,5,0,5,34,26,16,9,7]},{"de":"Zwergschnepfe","sci":"Lymnocryptes minimus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Waldschnepfe","sci":"Scolopax rusticola","months":[2,0,3,0,0,0,0,0,0,0,1,6]},{"de":"Sanderling","sci":"Calidris alba","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Zwergstrandläufer","sci":"Calidris minuta","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Alpenstrandläufer","sci":"Calidris alpina","months":[1,0,0,0,0,0,0,0,3,2,0,0]},{"de":"Kampfläufer","sci":"Calidris pugnax","months":[4,0,8,1,0,0,7,3,0,0,0,0]},{"de":"Säbelschnäbler","sci":"Recurvirostra avosetta","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Sturmmöwe","sci":"Larus canus","months":[7,8,1,0,0,0,0,0,1,1,0,0]},{"de":"Silbermöwe","sci":"Larus argentatus","months":[9,13,3,0,1,2,1,2,2,3,10,3]},{"de":"Mittelmeermöwe","sci":"Larus michahellis","months":[4,1,0,0,1,0,0,0,0,0,0,0]},{"de":"Steppenmöwe","sci":"Larus cachinnans","months":[26,38,10,1,10,2,1,4,5,15,23,23]},{"de":"Heringsmöwe","sci":"Larus fuscus","months":[1,2,2,3,7,4,1,1,3,8,3,0]},{"de":"Lachmöwe","sci":"Chroicocephalus ridibundus","months":[80,60,50,37,60,34,46,39,40,29,64,50]},{"de":"Trauerseeschwalbe","sci":"Chlidonias niger","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Flussseeschwalbe","sci":"Sterna hirundo","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Straßentaube (Haustaube)","sci":"Columba livia f. domestica","months":[209,263,280,154,276,168,227,208,253,230,282,294]},{"de":"Hohltaube","sci":"Columba oenas","months":[46,79,126,89,104,54,82,101,30,30,48,46]},{"de":"Ringeltaube","sci":"Columba palumbus","months":[648,715,901,699,942,542,725,908,674,604,813,670]},{"de":"Türkentaube","sci":"Streptopelia decaocto","months":[20,41,43,46,76,28,41,40,31,3,5,8]},{"de":"Kuckuck","sci":"Cuculus canorus","months":[10,49,14,0,1,0,0,0,0,0,0,0]},{"de":"Schleiereule","sci":"Tyto alba","months":[1,0,0,0,0,1,0,1,1,0,0,0]},{"de":"Steinkauz","sci":"Athene noctua","months":[2,1,0,2,5,0,0,0,0,0,0,0]},{"de":"Waldkauz","sci":"Strix aluco","months":[11,16,25,2,6,15,11,6,5,9,12,15]},{"de":"Waldohreule","sci":"Asio otus","months":[1,1,0,1,1,2,0,0,0,0,0,0]},{"de":"Mauersegler","sci":"Apus apus","months":[34,469,392,318,70,5,0,0,0,0,0,0]},{"de":"Eisvogel","sci":"Alcedo atthis","months":[46,28,20,27,24,8,31,39,39,25,48,26]},{"de":"Wiedehopf","sci":"Upupa epops","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Grünspecht","sci":"Picus viridis","months":[75,164,325,221,172,103,250,264,197,147,140,82]},{"de":"Grauspecht","sci":"Picus canus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Schwarzspecht","sci":"Dryocopus martius","months":[17,13,23,5,8,0,2,0,4,0,3,1]},{"de":"Buntspecht","sci":"Dendrocopos major","months":[215,246,284,199,245,138,161,178,151,163,217,180]},{"de":"Mittelspecht","sci":"Dendrocoptes medius","months":[7,19,29,17,7,2,2,1,1,8,4,7]},{"de":"Kleinspecht","sci":"Dryobates minor","months":[3,15,5,2,0,0,0,0,0,0,0,0]},{"de":"Heidelerche","sci":"Lullula arborea","months":[1,2,1,0,0,0,0,0,3,0,0,0]},{"de":"Feldlerche","sci":"Alauda arvensis","months":[9,22,12,19,4,0,0,8,43,24,0,0]},{"de":"Rauchschwalbe","sci":"Hirundo rustica","months":[18,102,126,84,70,100,89,7,0,0,0,0]},{"de":"Mehlschwalbe","sci":"Delichon urbicum","months":[3,23,94,108,70,142,67,0,0,0,0,0]},{"de":"Uferschwalbe","sci":"Riparia riparia","months":[27,54,28,28,17,2,0,0,0,0,0,0]},{"de":"Kolkrabe","sci":"Corvus corax","months":[8,12,18,7,10,4,7,6,8,13,4,8]},{"de":"Rabenkrähe","sci":"Corvus corone","months":[651,728,727,452,613,352,414,471,498,575,749,626]},{"de":"Saatkrähe","sci":"Corvus frugilegus","months":[58,51,79,100,92,21,14,96,118,105,99,75]},{"de":"Dohle","sci":"Coloeus monedula","months":[184,212,231,164,264,113,111,163,220,243,253,250]},{"de":"Elster","sci":"Pica pica","months":[498,530,547,296,429,268,242,310,376,397,496,458]},{"de":"Eichelhäher","sci":"Garrulus glandarius","months":[131,111,138,93,64,54,50,82,120,140,190,115]},{"de":"Kohlmeise","sci":"Parus major","months":[501,514,607,481,467,210,157,233,265,372,499,394]},{"de":"Blaumeise","sci":"Cyanistes caeruleus","months":[423,441,435,368,304,143,100,196,201,238,309,300]},{"de":"Tannenmeise","sci":"Periparus ater","months":[3,8,9,3,4,0,0,1,1,9,16,11]},{"de":"Haubenmeise","sci":"Lophophanes cristatus","months":[8,7,6,1,4,0,1,5,2,4,8,11]},{"de":"Sumpfmeise","sci":"Poecile palustris","months":[21,28,27,7,9,4,4,7,8,26,22,19]},{"de":"Weidenmeise","sci":"Poecile montanus","months":[1,0,0,0,0,0,0,1,0,1,0,0]},{"de":"Schwanzmeise","sci":"Aegithalos caudatus","months":[74,105,68,56,66,23,15,25,36,77,98,94]},{"de":"Beutelmeise","sci":"Remiz pendulinus","months":[2,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kleiber","sci":"Sitta europaea","months":[97,113,170,71,40,24,25,59,44,43,58,58]},{"de":"Waldbaumläufer","sci":"Certhia familiaris","months":[1,0,3,3,5,1,0,0,0,0,0,0]},{"de":"Gartenbaumläufer","sci":"Certhia brachydactyla","months":[95,103,156,119,150,52,64,102,98,91,108,99]},{"de":"Zaunkönig","sci":"Troglodytes troglodytes","months":[136,150,389,415,498,310,164,90,65,129,195,152]},{"de":"Rotkehlchen","sci":"Erithacus rubecula","months":[269,509,841,711,782,325,157,103,281,460,526,329]},{"de":"Nachtigall","sci":"Luscinia megarhynchos","months":[6,16,0,0,1,0,0,0,0,0,0,0]},{"de":"Hausrotschwanz","sci":"Phoenicurus ochruros","months":[1,25,104,88,44,27,13,14,46,8,7,0]},{"de":"Gartenrotschwanz","sci":"Phoenicurus phoenicurus","months":[7,2,0,0,0,7,4,0,0,0,0,0]},{"de":"Braunkehlchen","sci":"Saxicola rubetra","months":[11,29,0,0,11,29,0,0,0,0,0,0]},{"de":"Schwarzkehlchen","sci":"Saxicola rubicola","months":[1,1,12,3,7,2,0,1,2,2,0,0]},{"de":"Steinschmätzer","sci":"Oenanthe oenanthe","months":[8,14,0,0,3,12,1,0,0,0,0,0]},{"de":"Amsel","sci":"Turdus merula","months":[435,451,623,656,850,520,395,160,114,264,418,337]},{"de":"Wacholderdrossel","sci":"Turdus pilaris","months":[37,31,24,7,1,0,1,1,0,11,45,27]},{"de":"Rotdrossel","sci":"Turdus iliacus","months":[9,16,24,17,0,0,0,0,0,61,82,35]},{"de":"Singdrossel","sci":"Turdus philomelos","months":[5,65,289,132,198,134,75,8,16,58,13,1]},{"de":"Misteldrossel","sci":"Turdus viscivorus","months":[18,32,28,19,13,0,3,3,3,11,13,12]},{"de":"Seidensänger","sci":"Cettia cetti","months":[5,9,0,0,0,2,0,0,0,0,0,0]},{"de":"Feldschwirl","sci":"Locustella naevia","months":[1,6,0,0,0,0,0,0,0,0,0,0]},{"de":"Drosselrohrsänger","sci":"Acrocephalus arundinaceus","months":[7,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Teichrohrsänger","sci":"Acrocephalus scirpaceus","months":[1,68,39,27,2,0,0,0,0,0,0,0]},{"de":"Sumpfrohrsänger","sci":"Acrocephalus palustris","months":[73,57,7,2,0,0,0,0,0,0,0,0]},{"de":"Schilfrohrsänger","sci":"Acrocephalus schoenobaenus","months":[1,4,0,0,0,0,0,0,0,0,0,0]},{"de":"Gelbspötter","sci":"Hippolais icterina","months":[13,6,0,0,0,0,0,0,0,0,0,0]},{"de":"Mönchsgrasmücke","sci":"Sylvia atricapilla","months":[34,443,563,303,253,74,39,4,1,1,0,0]},{"de":"Gartengrasmücke","sci":"Sylvia borin","months":[14,68,37,11,2,1,0,0,0,0,0,0]},{"de":"Dorngrasmücke","sci":"Curruca communis","months":[71,176,89,30,8,7,0,0,0,0,0,0]},{"de":"Klappergrasmücke","sci":"Curruca curruca","months":[55,70,18,3,1,0,0,0,0,0,0,0]},{"de":"Fitis","sci":"Phylloscopus trochilus","months":[4,55,64,30,4,7,0,0,0,0,0,0]},{"de":"Zilpzalp","sci":"Phylloscopus collybita","months":[11,6,322,548,529,344,253,299,207,139,13,8]},{"de":"Waldlaubsänger","sci":"Phylloscopus sibilatrix","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Wintergoldhähnchen","sci":"Regulus regulus","months":[28,37,15,8,7,1,0,1,3,36,45,33]},{"de":"Sommergoldhähnchen","sci":"Regulus ignicapilla","months":[16,14,86,48,39,17,11,8,13,12,9,4]},{"de":"Grauschnäpper","sci":"Muscicapa striata","months":[2,11,10,4,8,10,5,0,0,0,0,0]},{"de":"Trauerschnäpper","sci":"Ficedula hypoleuca","months":[3,0,0,5,4,0,0,0,0,0,0,0]},{"de":"Heckenbraunelle","sci":"Prunella modularis","months":[83,198,377,245,270,139,35,38,59,101,114,63]},{"de":"Wiesenpieper","sci":"Anthus pratensis","months":[11,12,20,31,2,4,0,2,10,49,36,18]},{"de":"Brachpieper","sci":"Anthus campestris","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Baumpieper","sci":"Anthus trivialis","months":[6,1,0,0,4,20,6,0,0,0,0,0]},{"de":"Bergpieper","sci":"Anthus spinoletta","months":[6,5,11,4,0,0,0,0,0,0,11,4]},{"de":"Bachstelze","sci":"Motacilla alba","months":[16,36,115,114,136,87,59,58,58,71,42,25]},{"de":"Gebirgsstelze","sci":"Motacilla cinerea","months":[15,20,31,26,35,16,12,28,15,24,34,26]},{"de":"Schafstelze, unbestimmt","sci":"Motacilla flava","months":[4,2,0,0,0,8,0,0,0,0,0,0]},{"de":"Schafstelze (flava), Wiesenschafstelze","sci":"Motacilla flava flava","months":[1,36,54,10,6,13,14,0,0,0,0,0]},{"de":"Schafstelze (ssp. thunbergi), Thunbergschafstelze","sci":"Motacilla flava thunbergi","months":[5,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Seidenschwanz","sci":"Bombycilla garrulus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Neuntöter","sci":"Lanius collurio","months":[2,12,2,1,8,1,0,0,0,0,0,0]},{"de":"Star","sci":"Sturnus vulgaris","months":[19,48,91,99,187,62,27,51,84,73,35,23]},{"de":"Haussperling","sci":"Passer domesticus","months":[89,87,104,137,151,93,70,71,47,41,54,34]},{"de":"Kernbeißer","sci":"Coccothraustes coccothraustes","months":[59,76,82,41,8,6,7,3,2,18,37,21]},{"de":"Grünfink","sci":"Chloris chloris","months":[55,149,262,203,276,155,145,76,58,81,118,65]},{"de":"Stieglitz","sci":"Carduelis carduelis","months":[102,132,240,217,269,164,183,128,120,113,141,116]},{"de":"Erlenzeisig","sci":"Spinus spinus","months":[17,10,2,1,0,0,0,0,0,18,17,15]},{"de":"Bluthänfling","sci":"Linaria cannabina","months":[2,7,24,28,14,15,17,28,21,10,0,0]},{"de":"Alpenbirkenzeisig","sci":"Acanthis flammea cabaret","months":[1,1,1,0,0,0,0,0,0,0,0,0]},{"de":"Taiga- / Alpenbirkenzeisig (Birkenzeisig)","sci":"Acanthis flammea flammea / cabaret","months":[1,0,0,0,0,0,0,0,0,1,0,1]},{"de":"Girlitz","sci":"Serinus serinus","months":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Gimpel","sci":"Pyrrhula pyrrhula","months":[96,102,68,90,63,24,38,48,33,38,69,51]},{"de":"Fichtenkreuzschnabel","sci":"Loxia curvirostra","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Buchfink","sci":"Fringilla coelebs","months":[201,190,283,254,291,190,82,28,46,241,232,134]},{"de":"Bergfink","sci":"Fringilla montifringilla","months":[28,16,5,0,0,0,0,0,0,45,21,12]},{"de":"Goldammer","sci":"Emberiza citrinella","months":[5,8,14,21,34,19,2,1,4,8,3,1]},{"de":"Zippammer","sci":"Emberiza cia","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Rohrammer","sci":"Emberiza schoeniclus","months":[4,5,45,41,59,34,29,14,12,32,22,6]},{"de":"Nymphensittich","sci":"Nymphicus hollandicus","months":[2,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Wellensittich","sci":"Melopsittacus undulatus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Halsbandsittich","sci":"Psittacula krameri","months":[1,0,0,1,0,2,1,2,0,1,0,0]},{"de":"Lappentaucher, unbestimmt","sci":"Podicipedidae sp.","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Ente, unbestimmt","sci":"Anatinae sp.","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Limikole, unbestimmt","sci":"Charadriiformes sp.","months":[1,1,0,0,0,0,0,0,0,0,0,0]},{"de":"Silber-_oder_Mittelmeer-_oder_Steppenmöwe","sci":"Larus argentatus / cachinnans / michahellis","months":[8,5,2,1,0,2,0,2,1,1,6,7]},{"de":"Großmöwe, unbestimmt","sci":"Larus sp.","months":[17,14,15,5,7,2,0,5,8,17,19,8]},{"de":"Falke, unbestimmt","sci":"Falco sp.","months":[1,0,1,0,0,0,6,0,1,0,0,0]},{"de":"Möwe, unbestimmt","sci":"Laridae sp.","months":[2,2,0,0,0,0,0,1,0,0,0,0]},{"de":"Greifvogel, unbestimmt","sci":"Accipitriformes / Falconiformes sp.","months":[2,1,0,1,1,0,0,3,0,0,1,0]},{"de":"Bussard, unbestimmt","sci":"Buteo sp.","months":[1,0,1,0,1,0,0,0,0,0,0,0]},{"de":"Krähe/Rabe, unbestimmt","sci":"Corvidae sp.","months":[1,0,0,0,0,1,1,0,0,0,0,0]},{"de":"Schwalbe, unbestimmt","sci":"Hirundinidae sp.","months":[1,1,0,0,0,0,0,0,0,0,0,0]},{"de":"Milan, unbestimmt","sci":"Milvus sp.","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Drossel, unbestimmt","sci":"Turdus sp.","months":[1,4,2,1,0,0,0,0,0,7,2,3]},{"de":"Pieper, unbestimmt","sci":"Anthus sp.","months":[1,1,0,0,0,0,0,0,1,0,1,0]},{"de":"Fink, unbestimmt","sci":"Fringillidae sp.","months":[1,0,0,0,0,0,0,0,5,4,0,1]},{"de":"Meise, unbestimmt","sci":"Paridae sp.","months":[2,0,0,0,0,0,0,0,0,2,0,0]},{"de":"Rotschwanz, unbestimmt","sci":"Phoenicurus sp.","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Buch-_oder_Bergfink","sci":"Fringilla coelebs / montifringilla","months":[1,0,0,0,0,0,0,0,0,3,0,0]},{"de":"Goldhähnchen, unbestimmt","sci":"Regulus sp.","months":[2,0,1,0,0,0,0,0,1,2,1,2]},{"de":"Wasserläufer, unbestimmt","sci":"Tringa sp.","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Raben-_oder_Nebelkrähe (Aaskrähe)","sci":"Corvus corone / cornix","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Schwanzmeise (ssp. caudatus)","sci":"Aegithalos caudatus caudatus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Gimpel (ssp. pyrrhula), Trompetergimpel","sci":"Pyrrhula pyrrhula pyrrhula","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Moor-_x_Reiherente","sci":"Aythya fuligula x nyroca","months":[7,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Grau-_x_Kanadagans","sci":"Anser anser x Branta canadensis","months":[7,6,4,1,1,1,5,2,4,2,6,4]},{"de":"Pfau","sci":"Pavo cristatus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Gans (Anser / Branta), unbestimmt","sci":"Anser / Branta sp.","months":[1,0,1,0,0,0,0,0,0,0,0,0]},{"de":"Bläss-_oder_Saatgans","sci":"Anser albifrons / fabalis / serrirostris","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Stockente, Bastard, fehlfarben","sci":"Anas platyrhynchos (Bastard)","months":[46,42,41,23,43,34,49,51,39,27,45,39]},{"de":"Mittelmeer-_oder_Steppenmöwe (Weißkopfmöwe)","sci":"Larus cachinnans / michahellis","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Rotdrossel (ssp. coburni)","sci":"Turdus iliacus coburni","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kanada-_x_Weißwangengans","sci":"Branta canadensis x leucopsis","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kanadagans-Hybrid, unbestimmt","sci":"Branta canadensis x ?","months":[1,2,1,0,0,1,7,1,0,2,0,0]},{"de":"Graugans-Hybrid, unbestimmt","sci":"Anser anser x ?","months":[3,2,1,2,0,0,0,2,0,0,2,2]},{"de":"Baumläufer, unbestimmt","sci":"Certhia sp.","months":[1,1,0,2,0,0,0,0,0,0,1,1]},{"de":"keine Art festgestellt (Nullzählung)","sci":"No aves","months":[1,0,1,5,1,1,0,3,2,1,0,1]},{"de":"Steppen-_oder_Wiesenweihe","sci":"Circus macrourus / pygargus","months":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Grau-_x_Hausgans","sci":"Anser anser x anser f. domestica","months":[1,1,2,1,0,0,0,1,0,0,1,0]}]}
+  </script>
+
+  <script>
+    const filterInput = document.getElementById("filterInput");
+    const monthSelect = document.getElementById("monthSelect");
+    const cardsEl = document.getElementById("cards");
+    const countInfo = document.getElementById("countInfo");
+
+    function normalize(s) {
+      return (s || "")
+        .toLowerCase()
+        // .normalize("NFD")
+        // .replace(/\p{Diacritic}/gu, "")
+        // .replace(/ß/g, "ss");
+    }
+
+    function axisMax(maxVal) {
+      if (maxVal <= 0) return 1;
+      const mag = 10 ** Math.floor(Math.log10(maxVal));
+      return Math.ceil(maxVal / mag) * mag;
+    }
+
+    function chartSvg(values, highlightedMonth, monthInitials) {
+      const w = 312;
+      const h = 100;
+      const left = 22;
+      const right = 4;
+      const top = 8;
+      const bottom = 22;
+      const plotW = w - left - right;
+      const plotH = h - top - bottom;
+
+      const maxRaw = Math.max(...values);
+      const yMax = axisMax(maxRaw);
+      const barGap = 3;
+      const barW = (plotW - barGap * 11) / 12;
+
+      const yMid = top + plotH / 2;
+      const yTop = top;
+      const yBottom = top + plotH;
+
+      let bars = "";
+      let labels = "";
+
+      let valueLabels = "";
+      values.forEach((v, i) => {
+        const bh = (v / yMax) * plotH;
+        const x = left + i * (barW + barGap);
+        const y = top + (plotH - bh);
+        const cls = i === highlightedMonth ? "bar highlight" : "bar";
+        bars += `<rect class="${cls}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${Math.max(0, bh).toFixed(2)}" rx="1"></rect>`;
+        labels += `<text class="axis-label" x="${(x + barW / 2).toFixed(2)}" y="${h - 8}" text-anchor="middle">${monthInitials[i] || "?"}</text>`;
+        if (v > 0) {
+          valueLabels += `<text class="bar-value" x="${(x + barW / 2).toFixed(2)}" y="${(yBottom - 2).toFixed(2)}" text-anchor="middle">${v}</text>`;
+        }
+      });
+
+      return `
+        <svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+          <line class="grid" x1="${left}" y1="${yBottom}" x2="${w - right}" y2="${yBottom}"></line>
+          <line class="grid" x1="${left}" y1="${yMid}" x2="${w - right}" y2="${yMid}"></line>
+          <line class="grid" x1="${left}" y1="${yTop}" x2="${w - right}" y2="${yTop}"></line>
+
+          <text class="tick-label" x="2" y="${(yBottom + 3).toFixed(2)}">0</text>
+          <text class="tick-label" x="2" y="${(yMid + 3).toFixed(2)}">${Math.round(yMax / 2)}</text>
+          <text class="tick-label" x="2" y="${(yTop + 3).toFixed(2)}">${yMax}</text>
+
+          ${bars}
+          ${valueLabels}
+          ${labels}
+        </svg>
+      `;
+    }
+
+    function render(species, query, monthIndex, monthNames) {
+      const q = normalize(query);
+      const visible = q
+        ? species.filter((d) => d._key.includes(q))
+        : species;
+
+      const monthInitials = monthNames.map((m) => (m || "").slice(0, 1));
+
+      cardsEl.innerHTML = visible
+        .map((d) => {
+          const monthValue = d.months[monthIndex] ?? 0;
+          return `
+            <article class="card">
+              <div class="names">
+                <div class="de">${d.de}</div>
+                <div class="sci">${d.sci}</div>
+                <div class="meta">
+                  <span class="chip">${monthNames[monthIndex]}: ${monthValue}</span>
+                  <span class="chip">Jahressumme: ${d._sum}</span>
+                  <span class="chip">Max Monat: ${d._max}</span>
+                </div>
+              </div>
+              ${chartSvg(d.months, monthIndex, monthInitials)}
+            </article>
+          `;
+        })
+        .join("");
+
+      countInfo.textContent = `${visible.length} von ${species.length} Arten`;
+    }
+
+    function init() {
+      const payload = JSON.parse(document.getElementById("jsonData").textContent);
+      const monthNames = payload.meta.months;
+
+      const species = payload.species.map((d) => {
+        const months = Array.isArray(d.months) ? d.months : [];
+        const max = months.length ? Math.max(...months) : 0;
+        const sum = months.reduce((a, b) => a + b, 0);
+        return {
+          de: d.de,
+          sci: d.sci,
+          months,
+          _max: max,
+          _sum: sum,
+          _key: normalize(`${d.de} ${d.sci}`)
+        };
+      });
+
+      monthNames.forEach((m, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = m;
+        monthSelect.appendChild(opt);
+      });
+
+      const currentMonth = new Date().getMonth();
+      monthSelect.value = String(Math.min(Math.max(currentMonth, 0), monthNames.length - 1));
+
+      const rerender = () => render(species, filterInput.value, Number(monthSelect.value), monthNames);
+      filterInput.addEventListener("input", rerender);
+      monthSelect.addEventListener("change", rerender);
+      rerender();
+    }
+
+    init();
+  </script>
+</body>
+</html>
