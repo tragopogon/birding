@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vogelbeobachtungen Dortmund - Monatsverteilung</title>
+  <style>
+    :root {
+      --bg: #f5f7f0;
+      --panel: #ffffff;
+      --ink: #132018;
+      --muted: #5f7365;
+      --line: #d7e0d4;
+      --bar: #6f8976;
+      --bar-hi: #d95f02;
+      --head: #254336;
+      --chip: #edf3e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 10%, #ffffff 0%, transparent 42%),
+        radial-gradient(circle at 80% 90%, #e7efe3 0%, transparent 35%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 20px 16px 28px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.7rem;
+      letter-spacing: 0.2px;
+      color: var(--head);
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      grid-template-rows: auto auto;
+      gap: 8px 10px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      position: sticky;
+      top: 8px;
+      z-index: 2;
+      box-shadow: 0 7px 18px rgba(0, 0, 0, 0.05);
+    }
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      height: 40px;
+      border: 1px solid #c8d4c6;
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 0.95rem;
+      background: #fbfdf9;
+      color: var(--ink);
+    }
+    .count {
+      padding: 0 10px;
+      white-space: nowrap;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    #cards {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 10px 8px;
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 6px;
+      min-height: 196px;
+      min-width: 0;
+    }
+    .names { display: grid; gap: 2px; }
+    .name-line {
+      font-size: 0.93rem;
+      line-height: 1.3;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0;
+    }
+    .de {
+      font-weight: 700;
+      color: #173126;
+      white-space: nowrap;
+    }
+    .sep {
+      color: #a0b09a;
+      margin: 0 4px;
+    }
+    .sci {
+      font-style: italic;
+      color: #3f5a4b;
+      white-space: nowrap;
+    }
+    .en {
+      color: #7a8f84;
+      white-space: nowrap;
+    }
+    .meta {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .chip {
+      background: var(--chip);
+      border: 1px solid #d7e2d2;
+      border-radius: 99px;
+      padding: 2px 8px;
+      font-size: 0.77rem;
+      color: #274739;
+    }
+    .chart {
+      width: 100%;
+      height: 114px;
+      display: block;
+      border-top: 1px dashed #d9e2d7;
+      padding-top: 5px;
+    }
+    .axis-label {
+      font-size: 9px;
+      fill: #58705f;
+      font-weight: 600;
+    }
+    .tick-label {
+      font-size: 9px;
+      fill: #6f8476;
+    }
+    .grid {
+      stroke: #dee6dc;
+      stroke-width: 1;
+      shape-rendering: crispEdges;
+    }
+    .bar {
+      fill: var(--bar);
+      opacity: 0.86;
+    }
+    .bar.highlight {
+      fill: var(--bar-hi);
+      opacity: 1;
+    }
+    .bar-value {
+      font-size: 8px;
+      fill: #1b1818;
+      font-weight: 700;
+      dominant-baseline: auto;
+    }
+    .hide-zero-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      font-size: 0.9rem;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .hide-zero-label input[type=checkbox] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .toolbar-filter {
+      grid-column: 1 / -1;
+    }
+    .label-short, .count-short { display: none; }
+    @media (max-width: 480px) {
+      .label-long { display: none; }
+      .label-short { display: inline; }
+      .count-long { display: none; }
+      .count-short { display: inline; }
+      .toolbar select { padding: 0 4px; font-size: 0.82rem; }
+      .hide-zero-label { font-size: 0.82rem; }
+    }
+    @media (max-width: 840px) {
+      .count { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Vogelbeobachtungen Dortmund - Monatsverteilung</h1>
+    <p class="subtitle">Filter nach deutschem, wissenschaftlichem oder englischem Namen. Der ausgewählte Monat wird je Art hervorgehoben.</p>
+
+    <div class="toolbar">
+      <input id="filterInput" type="text" class="toolbar-filter" placeholder="Filter (z.B. Ringeltaube, Columba palumbus oder Wood Pigeon)" />
+      <select id="monthSelect" aria-label="Hervorgehobener Monat"></select>
+      <label class="hide-zero-label" title="Arten ohne Beobachtungen im gewählten Monat ausblenden">
+        <input type="checkbox" id="hideZeroCheck" checked />
+        <span class="label-long">Nur mit Beobachtungen</span><span class="label-short">m. Beob.</span>
+      </label>
+      <div class="count" id="countInfo"></div>
+    </div>
+
+    <div id="cards"></div>
+  </div>
+
+  <script id="jsonData" type="application/json">{"meta":{"region":"Dortmund","year":2025,"months":["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],"valueDescription":"Anzahl Beobachtungen pro Monat"},"species":[{"de":"Eistaucher","en":"Common Loon","sci":"Gavia immer","observations":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Zwergtaucher","en":"Little Grebe","sci":"Tachybaptus ruficollis","observations":[81,64,75,46,50,34,44,47,47,39,60,50]},{"de":"Schwarzhalstaucher","en":"Black-necked Grebe","sci":"Podiceps nigricollis","observations":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Haubentaucher","en":"Great Crested Grebe","sci":"Podiceps cristatus","observations":[61,43,55,65,78,36,44,42,29,29,36,29]},{"de":"Kormoran","en":"Great Cormorant","sci":"Phalacrocorax carbo","observations":[114,106,109,68,70,36,47,61,78,98,134,81]},{"de":"Graureiher","en":"Grey Heron","sci":"Ardea cinerea","observations":[140,153,146,143,162,77,89,100,96,107,125,127]},{"de":"Silberreiher","en":"Great Egret","sci":"Ardea alba","observations":[61,87,58,34,22,0,4,27,33,45,63,46]},{"de":"Seidenreiher","en":"Little Egret","sci":"Egretta garzetta","observations":[8,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Rohrdommel","en":"Eurasian Bittern","sci":"Botaurus stellaris","observations":[5,1,1,0,0,0,0,0,1,1,2,31]},{"de":"Weißstorch","en":"White Stork","sci":"Ciconia ciconia","observations":[2,7,18,22,30,11,5,13,12,1,0,0]},{"de":"Löffler","en":"Eurasian Spoonbill","sci":"Platalea leucorodia","observations":[1,1,0,0,0,0,0,0,3,0,0,0]},{"de":"Singschwan","en":"Whooper Swan","sci":"Cygnus cygnus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Höckerschwan","en":"Mute Swan","sci":"Cygnus olor","observations":[79,69,95,68,97,39,45,40,58,43,63,45]},{"de":"Schwarzschwan (Trauerschwan)","en":"Black Swan","sci":"Cygnus atratus","observations":[5,6,0,2,3,0,0,0,6,0,0,0]},{"de":"Graugans","en":"Greylag Goose","sci":"Anser anser","observations":[27,49,99,94,90,44,52,51,41,36,32,28]},{"de":"Blässgans","en":"Greater White-fronted Goose","sci":"Anser albifrons","observations":[12,2,1,0,0,0,0,0,1,10,4,5]},{"de":"Saatgans, unbestimmt","en":"Taiga / Tundra Bean Goose","sci":"Anser fabalis / serrirostris","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kurzschnabelgans","en":"Pink-footed Goose","sci":"Anser brachyrhynchus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Hausgans","en":"Domestic Goose","sci":"Anser cf. domestica","observations":[1,2,3,3,0,0,1,0,1,1,1,0]},{"de":"Anser-Gans, unbestimmt","en":"Anser-Goose, unidentified","sci":"Anser sp.","observations":[1,0,0,0,0,0,0,0,0,3,1,0]},{"de":"Streifengans","en":"Bar-headed Goose","sci":"Anser indicus","observations":[3,3,2,0,0,2,0,2,0,0,1,2]},{"de":"Weißwangengans (Nonnengans)","en":"Barnacle Goose","sci":"Branta leucopsis","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kanadagans","en":"Canada Goose","sci":"Branta canadensis","observations":[120,169,231,201,214,59,104,131,99,119,89,49]},{"de":"Rostgans","en":"Ruddy Shelduck","sci":"Tadorna ferruginea","observations":[13,13,27,29,51,33,23,30,34,19,11,2]},{"de":"Nilgans","en":"Egyptian Goose","sci":"Alopochen aegyptiaca","observations":[134,158,203,160,154,81,89,86,81,129,173,130]},{"de":"Brandgans","en":"Common Shelduck","sci":"Tadorna tadorna","observations":[2,10,1,0,0,4,7,0,0,0,0,0]},{"de":"Warzenente (Moschusente)","en":"Domestic Muscovy Duck","sci":"Cairina moschata f. domestica","observations":[1,1,1,0,2,1,0,0,0,5,0,0]},{"de":"Stockente","en":"Mallard","sci":"Anas platyrhynchos","observations":[139,141,204,164,168,81,102,120,83,100,137,112]},{"de":"Knäkente","en":"Garganey","sci":"Spatula querquedula","observations":[5,2,4,0,0,1,2,0,0,0,0,0]},{"de":"Krickente","en":"Eurasian Teal","sci":"Anas crecca","observations":[27,43,62,37,10,1,15,32,35,28,45,34]},{"de":"Spießente","en":"Northern Pintail","sci":"Anas acuta","observations":[6,8,2,0,0,0,0,0,0,0,1,1]},{"de":"Pfeifente","en":"Eurasian Wigeon","sci":"Mareca penelope","observations":[7,6,1,0,0,0,0,0,5,6,5,3]},{"de":"Mandarinente","en":"Mandarin Duck","sci":"Aix galericulata","observations":[4,5,8,1,0,1,0,1,0,4,1,0]},{"de":"Schnatterente","en":"Gadwall","sci":"Mareca strepera","observations":[45,51,64,53,58,25,20,49,43,32,58,53]},{"de":"Löffelente","en":"Northern Shoveler","sci":"Spatula clypeata","observations":[11,4,6,24,2,0,3,3,25,13,10,6]},{"de":"Hausente","en":"Domestic Duck","sci":"Anas platyrhynchos f. domestica","observations":[10,3,3,3,6,3,3,4,6,2,4,5]},{"de":"Kolbenente","en":"Red-crested Pochard","sci":"Netta rufina","observations":[7,16,15,14,3,9,13,5,0,5,0,0]},{"de":"Tafelente","en":"Common Pochard","sci":"Aythya ferina","observations":[62,32,16,1,1,0,0,1,3,21,34,27]},{"de":"Reiherente","en":"Tufted Duck","sci":"Aythya fuligula","observations":[73,57,66,62,74,29,42,39,34,32,50,40]},{"de":"Moorente","en":"Ferruginous Duck","sci":"Aythya nyroca","observations":[13,19,4,10,6,1,0,0,0,0,21,7]},{"de":"Bergente","en":"Greater Scaup","sci":"Aythya marila","observations":[18,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Enten-Hybrid, unbestimmt","en":"Duck hybrid, unidentified","sci":"Anatidae sp. x Anatidae sp.","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Schellente","en":"Common Goldeneye","sci":"Bucephala clangula","observations":[30,15,3,0,0,0,0,0,0,0,0,11]},{"de":"Kappensäger","en":"Hooded Merganser","sci":"Lophodytes cucullatus","observations":[2,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Zwergsäger","en":"Smew","sci":"Mergellus albellus","observations":[31,5,0,0,0,0,0,0,0,0,0,4]},{"de":"Gänsesäger","en":"Common Merganser","sci":"Mergus merganser","observations":[16,16,4,0,2,1,0,0,1,0,0,4]},{"de":"Wespenbussard","en":"European Honey Buzzard","sci":"Pernis apivorus","observations":[4,2,0,5,9,0,0,0,0,0,0,0]},{"de":"Rotmilan","en":"Red Kite","sci":"Milvus milvus","observations":[11,43,25,32,19,12,12,23,8,10,2,0]},{"de":"Schwarzmilan","en":"Black Kite","sci":"Milvus migrans","observations":[2,3,1,3,0,0,1,0,0,0,0,0]},{"de":"Habicht","en":"Eurasian Goshawk","sci":"Astur gentilis","observations":[5,14,6,6,1,0,3,3,10,7,9,14]},{"de":"Sperber","en":"Eurasian Sparrowhawk","sci":"Accipiter nisus","observations":[21,15,20,19,9,6,6,18,20,34,38,12]},{"de":"Mäusebussard","en":"Common Buzzard","sci":"Buteo buteo","observations":[128,172,251,137,129,71,82,103,178,120,124,126]},{"de":"Steinadler","en":"Golden Eagle","sci":"Aquila chrysaetos","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Seeadler","en":"White-tailed Eagle","sci":"Haliaeetus albicilla","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kornweihe","en":"Hen Harrier","sci":"Circus cyaneus","observations":[1,0,0,0,0,1,0,0,0,0,0,0]},{"de":"Rohrweihe","en":"Western Marsh Harrier","sci":"Circus aeruginosus","observations":[2,1,10,0,3,5,6,1,0,0,0,0]},{"de":"Weihe, unbestimmt","en":"Harrier, unidentified","sci":"Circus sp.","observations":[1,0,0,0,1,1,0,0,0,0,0,0]},{"de":"Fischadler","en":"Western Osprey","sci":"Pandion haliaetus","observations":[4,1,0,0,2,0,1,0,0,0,0,0]},{"de":"Wanderfalke","en":"Peregrine Falcon","sci":"Falco peregrinus","observations":[1,4,0,8,5,6,4,4,9,9,4,6]},{"de":"Baumfalke","en":"Eurasian Hobby","sci":"Falco subbuteo","observations":[1,1,3,4,5,6,10,8,0,0,0,0]},{"de":"Merlin","en":"Merlin","sci":"Falco columbarius","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Turmfalke","en":"Common Kestrel","sci":"Falco tinnunculus","observations":[40,39,84,79,112,63,90,84,125,70,81,49]},{"de":"Wachtel","en":"Common Quail","sci":"Coturnix coturnix","observations":[1,0,1,0,0,0,0,0,0,0,0,0]},{"de":"Fasan (Jagdfasan)","en":"Common Pheasant","sci":"Phasianus colchicus","observations":[18,19,56,76,109,47,24,18,34,40,44,22]},{"de":"Kranich","en":"Common Crane","sci":"Grus grus","observations":[10,131,17,0,0,0,0,0,1,88,77,27]},{"de":"Wasserralle","en":"Water Rail","sci":"Rallus aquaticus","observations":[39,27,38,12,22,16,16,21,34,27,46,37]},{"de":"Teichhuhn","en":"Common Moorhen","sci":"Gallinula chloropus","observations":[104,104,124,101,100,56,72,60,62,79,101,83]},{"de":"Blässhuhn","en":"Eurasian Coot","sci":"Fulica atra","observations":[124,111,145,135,149,80,65,64,61,56,82,60]},{"de":"Austernfischer","en":"Eurasian Oystercatcher","sci":"Haematopus ostralegus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kiebitz","en":"Northern Lapwing","sci":"Vanellus vanellus","observations":[3,11,33,22,42,30,34,27,32,22,11,0]},{"de":"Kiebitzregenpfeifer","en":"Grey Plover","sci":"Pluvialis squatarola","observations":[6,0,0,0,1,0,0,0,0,0,0,0]},{"de":"Goldregenpfeifer","en":"European Golden Plover","sci":"Pluvialis apricaria","observations":[1,0,0,0,0,0,0,0,0,1,1,0]},{"de":"Sandregenpfeifer","en":"Common Ringed Plover","sci":"Charadrius hiaticula","observations":[6,0,0,6,3,0,0,0,0,0,0,0]},{"de":"Flussregenpfeifer","en":"Little Ringed Plover","sci":"Charadrius dubius","observations":[36,40,57,44,28,6,0,0,0,0,0,0]},{"de":"Mornellregenpfeifer","en":"Eurasian Dotterel","sci":"Eudromias morinellus","observations":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Regenbrachvogel","en":"Eurasian Whimbrel","sci":"Numenius phaeopus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Uferschnepfe","en":"Black-tailed Godwit","sci":"Limosa limosa","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Dunkelwasserläufer","en":"Spotted Redshank","sci":"Tringa erythropus","observations":[3,2,2,0,1,1,1,0,0,0,0,0]},{"de":"Rotschenkel","en":"Common Redshank","sci":"Tringa totanus","observations":[6,1,4,0,0,0,1,0,0,0,0,0]},{"de":"Grünschenkel","en":"Common Greenshank","sci":"Tringa nebularia","observations":[1,7,16,1,0,14,0,0,0,0,0,0]},{"de":"Waldwasserläufer","en":"Green Sandpiper","sci":"Tringa ochropus","observations":[2,1,26,33,6,27,34,37,12,4,9,2]},{"de":"Bruchwasserläufer","en":"Wood Sandpiper","sci":"Tringa glareola","observations":[4,10,0,11,15,10,0,0,0,0,0,0]},{"de":"Flussuferläufer","en":"Common Sandpiper","sci":"Actitis hypoleucos","observations":[1,2,2,13,36,0,34,51,40,10,1,0]},{"de":"Bekassine","en":"Common Snipe","sci":"Gallinago gallinago","observations":[6,22,34,10,5,0,5,34,26,16,9,7]},{"de":"Zwergschnepfe","en":"Jack Snipe","sci":"Lymnocryptes minimus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Waldschnepfe","en":"Eurasian Woodcock","sci":"Scolopax rusticola","observations":[2,0,3,0,0,0,0,0,0,0,1,6]},{"de":"Sanderling","en":"Sanderling","sci":"Calidris alba","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Zwergstrandläufer","en":"Little Stint","sci":"Calidris minuta","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Alpenstrandläufer","en":"Dunlin","sci":"Calidris alpina","observations":[1,0,0,0,0,0,0,0,3,2,0,0]},{"de":"Kampfläufer","en":"Ruff","sci":"Calidris pugnax","observations":[4,0,8,1,0,0,7,3,0,0,0,0]},{"de":"Säbelschnäbler","en":"Pied Avocet","sci":"Recurvirostra avosetta","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Sturmmöwe","en":"Common Gull","sci":"Larus canus","observations":[7,8,1,0,0,0,0,0,1,1,0,0]},{"de":"Silbermöwe","en":"European Herring Gull","sci":"Larus argentatus","observations":[9,13,3,0,1,2,1,2,2,3,10,3]},{"de":"Mittelmeermöwe","en":"Yellow-legged Gull","sci":"Larus michahellis","observations":[4,1,0,0,1,0,0,0,0,0,0,0]},{"de":"Steppenmöwe","en":"Caspian Gull","sci":"Larus cachinnans","observations":[26,38,10,1,10,2,1,4,5,15,23,23]},{"de":"Heringsmöwe","en":"Lesser Black-backed Gull","sci":"Larus fuscus","observations":[1,2,2,3,7,4,1,1,3,8,3,0]},{"de":"Lachmöwe","en":"Black-headed Gull","sci":"Chroicocephalus ridibundus","observations":[80,60,50,37,60,34,46,39,40,29,64,50]},{"de":"Trauerseeschwalbe","en":"Black Tern","sci":"Chlidonias niger","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Flussseeschwalbe","en":"Common Tern","sci":"Sterna hirundo","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Straßentaube (Haustaube)","en":"Feral Rock Dove","sci":"Columba livia f. domestica","observations":[209,263,280,154,276,168,227,208,253,230,282,294]},{"de":"Hohltaube","en":"Stock Dove","sci":"Columba oenas","observations":[46,79,126,89,104,54,82,101,30,30,48,46]},{"de":"Ringeltaube","en":"Common Wood Pigeon","sci":"Columba palumbus","observations":[648,715,901,699,942,542,725,908,674,604,813,670]},{"de":"Türkentaube","en":"Eurasian Collared Dove","sci":"Streptopelia decaocto","observations":[20,41,43,46,76,28,41,40,31,3,5,8]},{"de":"Kuckuck","en":"Common Cuckoo","sci":"Cuculus canorus","observations":[10,49,14,0,1,0,0,0,0,0,0,0]},{"de":"Schleiereule","en":"Western Barn Owl","sci":"Tyto alba","observations":[1,0,0,0,0,1,0,1,1,0,0,0]},{"de":"Steinkauz","en":"Little Owl","sci":"Athene noctua","observations":[2,1,0,2,5,0,0,0,0,0,0,0]},{"de":"Waldkauz","en":"Tawny Owl","sci":"Strix aluco","observations":[11,16,25,2,6,15,11,6,5,9,12,15]},{"de":"Waldohreule","en":"Long-eared Owl","sci":"Asio otus","observations":[1,1,0,1,1,2,0,0,0,0,0,0]},{"de":"Mauersegler","en":"Common Swift","sci":"Apus apus","observations":[34,469,392,318,70,5,0,0,0,0,0,0]},{"de":"Eisvogel","en":"Common Kingfisher","sci":"Alcedo atthis","observations":[46,28,20,27,24,8,31,39,39,25,48,26]},{"de":"Wiedehopf","en":"Eurasian Hoopoe","sci":"Upupa epops","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Grünspecht","en":"European Green Woodpecker","sci":"Picus viridis","observations":[75,164,325,221,172,103,250,264,197,147,140,82]},{"de":"Grauspecht","en":"Grey-headed Woodpecker","sci":"Picus canus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Schwarzspecht","en":"Black Woodpecker","sci":"Dryocopus martius","observations":[17,13,23,5,8,0,2,0,4,0,3,1]},{"de":"Buntspecht","en":"Great Spotted Woodpecker","sci":"Dendrocopos major","observations":[215,246,284,199,245,138,161,178,151,163,217,180]},{"de":"Mittelspecht","en":"Middle Spotted Woodpecker","sci":"Dendrocoptes medius","observations":[7,19,29,17,7,2,2,1,1,8,4,7]},{"de":"Kleinspecht","en":"Lesser Spotted Woodpecker","sci":"Dryobates minor","observations":[3,15,5,2,0,0,0,0,0,0,0,0]},{"de":"Heidelerche","en":"Woodlark","sci":"Lullula arborea","observations":[1,2,1,0,0,0,0,0,3,0,0,0]},{"de":"Feldlerche","en":"Eurasian Skylark","sci":"Alauda arvensis","observations":[9,22,12,19,4,0,0,8,43,24,0,0]},{"de":"Rauchschwalbe","en":"Barn Swallow","sci":"Hirundo rustica","observations":[18,102,126,84,70,100,89,7,0,0,0,0]},{"de":"Mehlschwalbe","en":"Western House Martin","sci":"Delichon urbicum","observations":[3,23,94,108,70,142,67,0,0,0,0,0]},{"de":"Uferschwalbe","en":"Sand Martin","sci":"Riparia riparia","observations":[27,54,28,28,17,2,0,0,0,0,0,0]},{"de":"Kolkrabe","en":"Northern Raven","sci":"Corvus corax","observations":[8,12,18,7,10,4,7,6,8,13,4,8]},{"de":"Rabenkrähe","en":"Carrion Crow","sci":"Corvus corone","observations":[651,728,727,452,613,352,414,471,498,575,749,626]},{"de":"Saatkrähe","en":"Rook","sci":"Corvus frugilegus","observations":[58,51,79,100,92,21,14,96,118,105,99,75]},{"de":"Dohle","en":"Western Jackdaw","sci":"Coloeus monedula","observations":[184,212,231,164,264,113,111,163,220,243,253,250]},{"de":"Elster","en":"Eurasian Magpie","sci":"Pica pica","observations":[498,530,547,296,429,268,242,310,376,397,496,458]},{"de":"Eichelhäher","en":"Eurasian Jay","sci":"Garrulus glandarius","observations":[131,111,138,93,64,54,50,82,120,140,190,115]},{"de":"Kohlmeise","en":"Great Tit","sci":"Parus major","observations":[501,514,607,481,467,210,157,233,265,372,499,394]},{"de":"Blaumeise","en":"Eurasian Blue Tit","sci":"Cyanistes caeruleus","observations":[423,441,435,368,304,143,100,196,201,238,309,300]},{"de":"Tannenmeise","en":"Coal Tit","sci":"Periparus ater","observations":[3,8,9,3,4,0,0,1,1,9,16,11]},{"de":"Haubenmeise","en":"Crested Tit","sci":"Lophophanes cristatus","observations":[8,7,6,1,4,0,1,5,2,4,8,11]},{"de":"Sumpfmeise","en":"Marsh Tit","sci":"Poecile palustris","observations":[21,28,27,7,9,4,4,7,8,26,22,19]},{"de":"Weidenmeise","en":"Willow Tit (unspecified)","sci":"Poecile montanus","observations":[1,0,0,0,0,0,0,1,0,1,0,0]},{"de":"Schwanzmeise","en":"Long-tailed Tit","sci":"Aegithalos caudatus","observations":[74,105,68,56,66,23,15,25,36,77,98,94]},{"de":"Beutelmeise","en":"Eurasian Penduline Tit","sci":"Remiz pendulinus","observations":[2,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kleiber","en":"Eurasian Nuthatch","sci":"Sitta europaea","observations":[97,113,170,71,40,24,25,59,44,43,58,58]},{"de":"Waldbaumläufer","en":"Eurasian Treecreeper","sci":"Certhia familiaris","observations":[1,0,3,3,5,1,0,0,0,0,0,0]},{"de":"Gartenbaumläufer","en":"Short-toed Treecreeper","sci":"Certhia brachydactyla","observations":[95,103,156,119,150,52,64,102,98,91,108,99]},{"de":"Zaunkönig","en":"Eurasian Wren","sci":"Troglodytes troglodytes","observations":[136,150,389,415,498,310,164,90,65,129,195,152]},{"de":"Rotkehlchen","en":"European Robin","sci":"Erithacus rubecula","observations":[269,509,841,711,782,325,157,103,281,460,526,329]},{"de":"Nachtigall","en":"Common Nightingale","sci":"Luscinia megarhynchos","observations":[6,16,0,0,1,0,0,0,0,0,0,0]},{"de":"Hausrotschwanz","en":"Black Redstart","sci":"Phoenicurus ochruros","observations":[1,25,104,88,44,27,13,14,46,8,7,0]},{"de":"Gartenrotschwanz","en":"Common Redstart","sci":"Phoenicurus phoenicurus","observations":[7,2,0,0,0,7,4,0,0,0,0,0]},{"de":"Braunkehlchen","en":"Whinchat","sci":"Saxicola rubetra","observations":[11,29,0,0,11,29,0,0,0,0,0,0]},{"de":"Schwarzkehlchen","en":"European Stonechat","sci":"Saxicola rubicola","observations":[1,1,12,3,7,2,0,1,2,2,0,0]},{"de":"Steinschmätzer","en":"Northern Wheatear","sci":"Oenanthe oenanthe","observations":[8,14,0,0,3,12,1,0,0,0,0,0]},{"de":"Amsel","en":"Common Blackbird","sci":"Turdus merula","observations":[435,451,623,656,850,520,395,160,114,264,418,337]},{"de":"Wacholderdrossel","en":"Fieldfare","sci":"Turdus pilaris","observations":[37,31,24,7,1,0,1,1,0,11,45,27]},{"de":"Rotdrossel","en":"Redwing","sci":"Turdus iliacus","observations":[9,16,24,17,0,0,0,0,0,61,82,35]},{"de":"Singdrossel","en":"Song Thrush","sci":"Turdus philomelos","observations":[5,65,289,132,198,134,75,8,16,58,13,1]},{"de":"Misteldrossel","en":"Mistle Thrush","sci":"Turdus viscivorus","observations":[18,32,28,19,13,0,3,3,3,11,13,12]},{"de":"Seidensänger","en":"Cetti's Warbler","sci":"Cettia cetti","observations":[5,9,0,0,0,2,0,0,0,0,0,0]},{"de":"Feldschwirl","en":"Common Grasshopper Warbler","sci":"Locustella naevia","observations":[1,6,0,0,0,0,0,0,0,0,0,0]},{"de":"Drosselrohrsänger","en":"Great Reed Warbler","sci":"Acrocephalus arundinaceus","observations":[7,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Teichrohrsänger","en":"Common Reed Warbler","sci":"Acrocephalus scirpaceus","observations":[1,68,39,27,2,0,0,0,0,0,0,0]},{"de":"Sumpfrohrsänger","en":"Marsh Warbler","sci":"Acrocephalus palustris","observations":[73,57,7,2,0,0,0,0,0,0,0,0]},{"de":"Schilfrohrsänger","en":"Sedge Warbler","sci":"Acrocephalus schoenobaenus","observations":[1,4,0,0,0,0,0,0,0,0,0,0]},{"de":"Gelbspötter","en":"Icterine Warbler","sci":"Hippolais icterina","observations":[13,6,0,0,0,0,0,0,0,0,0,0]},{"de":"Mönchsgrasmücke","en":"Eurasian Blackcap","sci":"Sylvia atricapilla","observations":[34,443,563,303,253,74,39,4,1,1,0,0]},{"de":"Gartengrasmücke","en":"Garden Warbler","sci":"Sylvia borin","observations":[14,68,37,11,2,1,0,0,0,0,0,0]},{"de":"Dorngrasmücke","en":"Common Whitethroat","sci":"Curruca communis","observations":[71,176,89,30,8,7,0,0,0,0,0,0]},{"de":"Klappergrasmücke","en":"Lesser Whitethroat","sci":"Curruca curruca","observations":[55,70,18,3,1,0,0,0,0,0,0,0]},{"de":"Fitis","en":"Willow Warbler","sci":"Phylloscopus trochilus","observations":[4,55,64,30,4,7,0,0,0,0,0,0]},{"de":"Zilpzalp","en":"Common Chiffchaff","sci":"Phylloscopus collybita","observations":[11,6,322,548,529,344,253,299,207,139,13,8]},{"de":"Waldlaubsänger","en":"Wood Warbler","sci":"Phylloscopus sibilatrix","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Wintergoldhähnchen","en":"Goldcrest","sci":"Regulus regulus","observations":[28,37,15,8,7,1,0,1,3,36,45,33]},{"de":"Sommergoldhähnchen","en":"Common Firecrest","sci":"Regulus ignicapilla","observations":[16,14,86,48,39,17,11,8,13,12,9,4]},{"de":"Grauschnäpper","en":"Spotted Flycatcher","sci":"Muscicapa striata","observations":[2,11,10,4,8,10,5,0,0,0,0,0]},{"de":"Trauerschnäpper","en":"European Pied Flycatcher","sci":"Ficedula hypoleuca","observations":[3,0,0,5,4,0,0,0,0,0,0,0]},{"de":"Heckenbraunelle","en":"Dunnock","sci":"Prunella modularis","observations":[83,198,377,245,270,139,35,38,59,101,114,63]},{"de":"Wiesenpieper","en":"Meadow Pipit","sci":"Anthus pratensis","observations":[11,12,20,31,2,4,0,2,10,49,36,18]},{"de":"Brachpieper","en":"Tawny Pipit","sci":"Anthus campestris","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Baumpieper","en":"Tree Pipit","sci":"Anthus trivialis","observations":[6,1,0,0,4,20,6,0,0,0,0,0]},{"de":"Bergpieper","en":"Water Pipit","sci":"Anthus spinoletta","observations":[6,5,11,4,0,0,0,0,0,0,11,4]},{"de":"Bachstelze","en":"White Wagtail","sci":"Motacilla alba","observations":[16,36,115,114,136,87,59,58,58,71,42,25]},{"de":"Gebirgsstelze","en":"Grey Wagtail","sci":"Motacilla cinerea","observations":[15,20,31,26,35,16,12,28,15,24,34,26]},{"de":"Schafstelze, unbestimmt","en":"Western Yellow Wagtail, unidentified","sci":"Motacilla flava","observations":[4,2,0,0,0,8,0,0,0,0,0,0]},{"de":"Schafstelze (flava), Wiesenschafstelze","en":"Blue-headed Yellow Wagtail (ssp. flava)","sci":"Motacilla flava flava","observations":[1,36,54,10,6,13,14,0,0,0,0,0]},{"de":"Schafstelze (ssp. thunbergi), Thunbergschafstelze","en":"Grey-headed Yellow Wagtail (ssp. thunbergi)","sci":"Motacilla flava thunbergi","observations":[5,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Seidenschwanz","en":"Bohemian Waxwing","sci":"Bombycilla garrulus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Neuntöter","en":"Red-backed Shrike","sci":"Lanius collurio","observations":[2,12,2,1,8,1,0,0,0,0,0,0]},{"de":"Star","en":"Common Starling","sci":"Sturnus vulgaris","observations":[19,48,91,99,187,62,27,51,84,73,35,23]},{"de":"Haussperling","en":"House Sparrow","sci":"Passer domesticus","observations":[89,87,104,137,151,93,70,71,47,41,54,34]},{"de":"Kernbeißer","en":"Hawfinch","sci":"Coccothraustes coccothraustes","observations":[59,76,82,41,8,6,7,3,2,18,37,21]},{"de":"Grünfink","en":"European Greenfinch","sci":"Chloris chloris","observations":[55,149,262,203,276,155,145,76,58,81,118,65]},{"de":"Stieglitz","en":"European Goldfinch","sci":"Carduelis carduelis","observations":[102,132,240,217,269,164,183,128,120,113,141,116]},{"de":"Erlenzeisig","en":"Eurasian Siskin","sci":"Spinus spinus","observations":[17,10,2,1,0,0,0,0,0,18,17,15]},{"de":"Bluthänfling","en":"Common Linnet","sci":"Linaria cannabina","observations":[2,7,24,28,14,15,17,28,21,10,0,0]},{"de":"Alpenbirkenzeisig","en":"Lesser Redpoll (ssp. cabaret)","sci":"Acanthis flammea cabaret","observations":[1,1,1,0,0,0,0,0,0,0,0,0]},{"de":"Taiga- / Alpenbirkenzeisig (Birkenzeisig)","en":"Common / Lesser Redpoll (ssp. flammea / cabaret)","sci":"Acanthis flammea flammea / cabaret","observations":[1,0,0,0,0,0,0,0,0,1,0,1]},{"de":"Girlitz","en":"European Serin","sci":"Serinus serinus","observations":[3,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Gimpel","en":"Eurasian Bullfinch","sci":"Pyrrhula pyrrhula","observations":[96,102,68,90,63,24,38,48,33,38,69,51]},{"de":"Fichtenkreuzschnabel","en":"Red Crossbill","sci":"Loxia curvirostra","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Buchfink","en":"Eurasian Chaffinch","sci":"Fringilla coelebs","observations":[201,190,283,254,291,190,82,28,46,241,232,134]},{"de":"Bergfink","en":"Brambling","sci":"Fringilla montifringilla","observations":[28,16,5,0,0,0,0,0,0,45,21,12]},{"de":"Goldammer","en":"Yellowhammer","sci":"Emberiza citrinella","observations":[5,8,14,21,34,19,2,1,4,8,3,1]},{"de":"Zippammer","en":"Rock Bunting","sci":"Emberiza cia","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Rohrammer","en":"Common Reed Bunting","sci":"Emberiza schoeniclus","observations":[4,5,45,41,59,34,29,14,12,32,22,6]},{"de":"Nymphensittich","en":"Cockatiel","sci":"Nymphicus hollandicus","observations":[2,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Wellensittich","en":"Budgerigar","sci":"Melopsittacus undulatus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Halsbandsittich","en":"Rose-ringed Parakeet","sci":"Psittacula krameri","observations":[1,0,0,1,0,2,1,2,0,1,0,0]},{"de":"Lappentaucher, unbestimmt","en":"Grebe, unidentified","sci":"Podicipedidae sp.","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Ente, unbestimmt","en":"Duck, unidentified","sci":"Anatinae sp.","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Limikole, unbestimmt","en":"Wader, unidentified","sci":"Charadriiformes sp.","observations":[1,1,0,0,0,0,0,0,0,0,0,0]},{"de":"Silber-_oder_Mittelmeer-_oder_Steppenmöwe","en":"European Herring / Caspian / Yellow-legged Gull","sci":"Larus argentatus / cachinnans / michahellis","observations":[8,5,2,1,0,2,0,2,1,1,6,7]},{"de":"Großmöwe, unbestimmt","en":"Large Gull, unidentified","sci":"Larus sp.","observations":[17,14,15,5,7,2,0,5,8,17,19,8]},{"de":"Falke, unbestimmt","en":"Falcon, unidentified","sci":"Falco sp.","observations":[1,0,1,0,0,0,6,0,1,0,0,0]},{"de":"Möwe, unbestimmt","en":"Gull, unidentified","sci":"Laridae sp.","observations":[2,2,0,0,0,0,0,1,0,0,0,0]},{"de":"Greifvogel, unbestimmt","en":"Raptor, unidentified","sci":"Accipitriformes / Falconiformes sp.","observations":[2,1,0,1,1,0,0,3,0,0,1,0]},{"de":"Bussard, unbestimmt","en":"Buzzard, unidentified","sci":"Buteo sp.","observations":[1,0,1,0,1,0,0,0,0,0,0,0]},{"de":"Krähe/Rabe, unbestimmt","en":"Crow / Raven, unidentified","sci":"Corvidae sp.","observations":[1,0,0,0,0,1,1,0,0,0,0,0]},{"de":"Schwalbe, unbestimmt","en":"Swallow / Martin, unidentified","sci":"Hirundinidae sp.","observations":[1,1,0,0,0,0,0,0,0,0,0,0]},{"de":"Milan, unbestimmt","en":"Kite, unidentified","sci":"Milvus sp.","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Drossel, unbestimmt","en":"Thrush, unidentified","sci":"Turdus sp.","observations":[1,4,2,1,0,0,0,0,0,7,2,3]},{"de":"Pieper, unbestimmt","en":"Pipit, unidentified","sci":"Anthus sp.","observations":[1,1,0,0,0,0,0,0,1,0,1,0]},{"de":"Fink, unbestimmt","en":"Finch, unidentified","sci":"Fringillidae sp.","observations":[1,0,0,0,0,0,0,0,5,4,0,1]},{"de":"Meise, unbestimmt","en":"Tit, unidentified","sci":"Paridae sp.","observations":[2,0,0,0,0,0,0,0,0,2,0,0]},{"de":"Rotschwanz, unbestimmt","en":"Redstart, unidentified","sci":"Phoenicurus sp.","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Buch-_oder_Bergfink","en":"Eurasian Chaffinch / Brambling","sci":"Fringilla coelebs / montifringilla","observations":[1,0,0,0,0,0,0,0,0,3,0,0]},{"de":"Goldhähnchen, unbestimmt","en":"Crest, unidentified","sci":"Regulus sp.","observations":[2,0,1,0,0,0,0,0,1,2,1,2]},{"de":"Wasserläufer, unbestimmt","en":"Tringa-Sandpiper, unidentified","sci":"Tringa sp.","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Raben-_oder_Nebelkrähe (Aaskrähe)","en":"Carrion / Hooded Crow","sci":"Corvus corone / cornix","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Schwanzmeise (ssp. caudatus)","en":"Long-tailed Tit (ssp. caudatus)","sci":"Aegithalos caudatus caudatus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Gimpel (ssp. pyrrhula), Trompetergimpel","en":"Eurasian Bullfinch (ssp. pyrrhula)","sci":"Pyrrhula pyrrhula pyrrhula","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Moor-_x_Reiherente","en":"Hybrid Ferruginous x Tufted Duck","sci":"Aythya fuligula x nyroca","observations":[7,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Grau-_x_Kanadagans","en":"Hybrid Greylag x Canada Goose","sci":"Anser anser x Branta canadensis","observations":[7,6,4,1,1,1,5,2,4,2,6,4]},{"de":"Pfau","en":"Indian Peafowl","sci":"Pavo cristatus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Gans (Anser / Branta), unbestimmt","en":"Goose (Anser / Branta), unidentified","sci":"Anser / Branta sp.","observations":[1,0,1,0,0,0,0,0,0,0,0,0]},{"de":"Bläss-_oder_Saatgans","en":"Greater White-fronted / Bean Goose","sci":"Anser albifrons / fabalis / serrirostris","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Stockente, Bastard, fehlfarben","en":"Domestic Duck (Bastard)","sci":"Anas platyrhynchos (Bastard)","observations":[46,42,41,23,43,34,49,51,39,27,45,39]},{"de":"Mittelmeer-_oder_Steppenmöwe (Weißkopfmöwe)","en":"Yellow-legged / Caspian Gull","sci":"Larus cachinnans / michahellis","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Rotdrossel (ssp. coburni)","en":"Redwing (ssp. coburni)","sci":"Turdus iliacus coburni","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kanada-_x_Weißwangengans","en":"Hybrid Canada x Barnacle Goose","sci":"Branta canadensis x leucopsis","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Kanadagans-Hybrid, unbestimmt","en":"Hybrid Canada Goose x ?","sci":"Branta canadensis x ?","observations":[1,2,1,0,0,1,7,1,0,2,0,0]},{"de":"Graugans-Hybrid, unbestimmt","en":"Hybrid Greylag Goose x ?","sci":"Anser anser x ?","observations":[3,2,1,2,0,0,0,2,0,0,2,2]},{"de":"Baumläufer, unbestimmt","en":"Treecreeper, unidentified","sci":"Certhia sp.","observations":[1,1,0,2,0,0,0,0,0,0,1,1]},{"de":"keine Art festgestellt (Nullzählung)","en":"","sci":"No aves","observations":[1,0,1,5,1,1,0,3,2,1,0,1]},{"de":"Steppen-_oder_Wiesenweihe","en":"Pallid / Montagu's Harrier","sci":"Circus macrourus / pygargus","observations":[0,0,0,0,0,0,0,0,0,0,0,0]},{"de":"Grau-_x_Hausgans","en":"Hybrid Greylag x Domestic Goose","sci":"Anser anser x anser f. domestica","observations":[1,1,2,1,0,0,0,1,0,0,1,0]}]}</script>
+
+<script>
+    const filterInput = document.getElementById("filterInput");
+    const monthSelect = document.getElementById("monthSelect");
+    const hideZeroCheck = document.getElementById("hideZeroCheck");
+    const cardsEl = document.getElementById("cards");
+    const countInfo = document.getElementById("countInfo");
+
+    function normalize(s) {
+      return (s || "")
+        .toLowerCase()
+        // .normalize("NFD")
+        // .replace(/\p{Diacritic}/gu, "")
+        // .replace(/ß/g, "ss");
+    }
+
+    function axisMax(maxVal) {
+      if (maxVal <= 0) return 1;
+      const mag = 10 ** Math.floor(Math.log10(maxVal));
+      return Math.ceil(maxVal / mag) * mag;
+    }
+
+    function chartSvg(values, highlightedMonth, monthInitials) {
+      const w = 312;
+      const h = 100;
+      const left = 22;
+      const right = 4;
+      const top = 8;
+      const bottom = 22;
+      const plotW = w - left - right;
+      const plotH = h - top - bottom;
+
+      const maxRaw = Math.max(...values);
+      const yMax = axisMax(maxRaw);
+      const barGap = 3;
+      const barW = (plotW - barGap * 11) / 12;
+
+      const yMid = top + plotH / 2;
+      const yTop = top;
+      const yBottom = top + plotH;
+
+      let bars = "";
+      let labels = "";
+
+      let valueLabels = "";
+      values.forEach((v, i) => {
+        const bh = (v / yMax) * plotH;
+        const x = left + i * (barW + barGap);
+        const y = top + (plotH - bh);
+        const cls = i === highlightedMonth ? "bar highlight" : "bar";
+        bars += `<rect class="${cls}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${Math.max(0, bh).toFixed(2)}" rx="1"></rect>`;
+        labels += `<text class="axis-label" x="${(x + barW / 2).toFixed(2)}" y="${h - 8}" text-anchor="middle">${monthInitials[i] || "?"}</text>`;
+        if (v > 0) {
+          valueLabels += `<text class="bar-value" x="${(x + barW / 2).toFixed(2)}" y="${(yBottom - 2).toFixed(2)}" text-anchor="middle">${v}</text>`;
+        }
+      });
+
+      return `
+        <svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+          <line class="grid" x1="${left}" y1="${yBottom}" x2="${w - right}" y2="${yBottom}"></line>
+          <line class="grid" x1="${left}" y1="${yMid}" x2="${w - right}" y2="${yMid}"></line>
+          <line class="grid" x1="${left}" y1="${yTop}" x2="${w - right}" y2="${yTop}"></line>
+
+          <text class="tick-label" x="2" y="${(yBottom + 3).toFixed(2)}">0</text>
+          <text class="tick-label" x="2" y="${(yMid + 3).toFixed(2)}">${Math.round(yMax / 2)}</text>
+          <text class="tick-label" x="2" y="${(yTop + 3).toFixed(2)}">${yMax}</text>
+
+          ${bars}
+          ${valueLabels}
+          ${labels}
+        </svg>
+      `;
+    }
+
+    function render(species, query, monthIndex, monthNames, hideZero) {
+      const q = normalize(query);
+      const visible = species.filter((d) =>
+        (!hideZero || (d.months[monthIndex] ?? 0) > 0) &&
+        (!q || d._key.includes(q))
+      );
+
+      const monthInitials = monthNames.map((m) => (m || "").slice(0, 1));
+
+      cardsEl.innerHTML = visible
+        .map((d) => {
+          const monthValue = d.months[monthIndex] ?? 0;
+          return `
+            <article class="card">
+              <div class="names">
+                <div class="name-line">
+                  <span class="de">${d.de}</span>
+                  <span class="sep"></span>
+                  <span class="sci">${d.sci}</span>
+                  ${d.en ? `<span class="sep"></span><span class="en">${d.en}</span>` : ""}
+                  <span class="sep"></span>
+                  <span class="chip">Jahressumme: ${d._sum}</span>
+                  </div>
+                <div class="meta">
+                  <!-- <span class="chip">${monthNames[monthIndex]}: ${monthValue}</span> -->
+                  
+                  <!-- <span class="chip">Max Monat: ${d._max}</span> -->
+                </div>
+              </div>
+              ${chartSvg(d.months, monthIndex, monthInitials)}
+            </article>
+          `;
+        })
+        .join("");
+
+      countInfo.innerHTML = `<span class="count-long">${visible.length} von ${species.length} Arten</span><span class="count-short">${visible.length}&thinsp;/&thinsp;${species.length}</span>`;
+    }
+
+    function init() {
+      const payload = JSON.parse(document.getElementById("jsonData").textContent);
+      const monthNames = payload.meta.months;
+
+      const species = payload.species.map((d) => {
+        const months = Array.isArray(d.observations) ? d.observations : [];
+        const max = months.length ? Math.max(...months) : 0;
+        const sum = months.reduce((a, b) => a + b, 0);
+        const en = d.en || "";
+        return {
+          de: d.de,
+          sci: d.sci,
+          en,
+          months,
+          _max: max,
+          _sum: sum,
+          _key: normalize(`${d.de} ${d.sci} ${en}`)
+        };
+      });
+
+      monthNames.forEach((m, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = m;
+        monthSelect.appendChild(opt);
+      });
+
+      const currentMonth = new Date().getMonth();
+      monthSelect.value = String(Math.min(Math.max(currentMonth, 0), monthNames.length - 1));
+
+      const rerender = () => render(species, filterInput.value, Number(monthSelect.value), monthNames, hideZeroCheck.checked);
+      filterInput.addEventListener("input", rerender);
+      monthSelect.addEventListener("change", rerender);
+      hideZeroCheck.addEventListener("change", rerender);
+      rerender();
+    }
+
+    init();
+  </script>
+</body>
+</html>
+
